@@ -67,9 +67,9 @@ export default class Helper {
     return api.rating({
       sid: this.sid,
       'tag[2]': rating.nudity ? 'yes' : 'no',
-      'tag[3]': rating.nudity ? 'yes' : 'no',
-      'tag[4]': rating.nudity ? 'yes' : 'no',
-      'tag[5]': rating.nudity ? 'yes' : 'no',
+      'tag[3]': rating.violence ? 'yes' : 'no',
+      'tag[4]': rating.sexualThemes ? 'yes' : 'no',
+      'tag[5]': rating.strongViolence ? 'yes' : 'no',
     });
   }
 }
