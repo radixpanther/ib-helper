@@ -1,6 +1,6 @@
 import api, { APIError, LoginResponse } from './api';
 
-export default class Helper {
+export class Helper {
   username: string;
   password: string;
   sid: string | undefined;
@@ -73,6 +73,7 @@ export default class Helper {
     });
   }
 }
+export default Helper;
 
 export interface Rating {
   nudity: boolean;

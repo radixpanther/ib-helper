@@ -1,4 +1,4 @@
-import helper from './helper';
-export default helper;
+import Helper from './helper';
+export default Helper;
 export * from './helper';
 export * from './api';
