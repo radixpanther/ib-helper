@@ -1,5 +1,5 @@
 // Import the module locally. You will need to import from 'ib-helper' instead!
-import Helper from '../dist';
+import Helper from '../src';
 
 // DISCLAIMER: Using the API as guest user is significantly slower! Use proper credentials instead!
 
