@@ -1,9 +1,15 @@
-import api, { APIError, LoginResponse } from './api';
+import api, { APIError, LoginResponse, SearchRequest, SearchResponse, SearchRIDRequest } from './api';
+
+interface Options {
+  retry: boolean;
+}
 
 export class Helper {
-  username: string;
-  password: string;
+  private username: string;
+  private password: string;
   sid: string | undefined;
+
+  private guestRating: Partial<Rating> | undefined;
 
   /**
    * Inkbunny API Helper class
@@ -27,7 +33,7 @@ export class Helper {
   async login(username = 'guest', password = '') {
     // Warn in guest mode
     if (this.username === 'guest') {
-      console.warn('Using the API as guest user is significantly slower! Use proper credentials instead!');
+      console.warn('Using the API as guest user can be significantly slower! Use proper credentials instead!');
     } else {
       this.username = username;
       this.password = password;
@@ -49,31 +55,232 @@ export class Helper {
   /**
    * Sign out to invalidate the current session.
    */
-  logout() {
-    if (this.sid === undefined) {
-      throw new APIError(2, "Invalid Session ID sent as variable 'sid'.");
-    }
-    return api.logout({ sid: this.sid });
+  async logout() {
+    const request = () => {
+      return api.logout({
+        sid: this.sid || '',
+      });
+    };
+    return handleErrors(request, {
+      2: this.handleSID,
+    });
   }
 
   /**
    * Update the user content rating (guest login only).
    * @param rating Allowed ratings
    */
-  rating(rating: Partial<Rating>) {
-    if (this.sid === undefined) {
-      throw new APIError(2, "Invalid Session ID sent as variable 'sid'.");
-    }
-    return api.rating({
-      sid: this.sid,
-      'tag[2]': rating.nudity ? 'yes' : 'no',
-      'tag[3]': rating.violence ? 'yes' : 'no',
-      'tag[4]': rating.sexualThemes ? 'yes' : 'no',
-      'tag[5]': rating.strongViolence ? 'yes' : 'no',
+  async rating(rating: Partial<Rating>) {
+    const request = () => {
+      return api.rating({
+        sid: this.sid || '',
+        'tag[2]': rating.nudity ? 'yes' : 'no',
+        'tag[3]': rating.violence ? 'yes' : 'no',
+        'tag[4]': rating.sexualThemes ? 'yes' : 'no',
+        'tag[5]': rating.strongViolence ? 'yes' : 'no',
+      });
+    };
+    const data = await handleErrors(request, {
+      2: this.handleSID,
     });
+    this.guestRating = rating;
+    return data;
+  }
+
+  /**
+   * Search submissions (complete control)
+   * @param params Request Parameters
+   */
+  async search(params: Omit<SearchRequest, 'sid'>) {
+    const request = () => {
+      return api.search({
+        sid: this.sid || '',
+        ...params,
+      });
+    };
+    const response = await handleErrors(request, {
+      2: this.handleSID,
+    });
+
+    // Inject pagination functions
+    const pageHelpers = this.pagination(
+      {
+        sid: this.sid || '',
+        ...params,
+      },
+      response
+    );
+
+    const data: SearchResponse & typeof pageHelpers = {
+      ...response,
+      ...pageHelpers,
+    };
+    return data;
+  }
+
+  /**
+   * Search submissions by certain tags
+   * @param tags Required tags
+   * @param idsOnly Return only submissions ids
+   * @param page Page number
+   * @param submissionsPerPage Amount of submissions to fetch per page
+   */
+  async searchTags(tags: string[], idsOnly = false, page = 1, submissionsPerPage = 30) {
+    const params: Partial<SearchRequest> = {
+      submission_ids_only: idsOnly ? 'yes' : 'no',
+      submissions_per_page: submissionsPerPage,
+      page,
+      get_rid: 'yes',
+      string_join_type: 'and',
+      text: tags.map((t) => t.replace(' ', '_')).join(','),
+      keywords: 'yes',
+    };
+
+    const request = () => {
+      return api.search({
+        sid: this.sid || '',
+        ...params,
+      });
+    };
+    const response = await handleErrors(request, {
+      2: this.handleSID,
+    });
+
+    // Inject pagination functions
+    const pageHelpers = this.pagination(
+      {
+        sid: this.sid || '',
+        ...params,
+      },
+      response
+    );
+
+    const data: SearchResponse & typeof pageHelpers = {
+      ...response,
+      ...pageHelpers,
+    };
+    return data;
+  }
+
+  // SID Error Handler - Refreshes the current session.
+  private handleSID = async () => {
+    const response = await api.login({ username: this.username, password: this.password });
+    this.sid = response.sid;
+
+    // Readjust ratings if using guest
+    if (this.username === 'guest' && this.guestRating) {
+      await this.rating(this.guestRating);
+    }
+  };
+
+  // RID Error Handler - Executes the orignial search instead.
+  private handleRID = (originalRequest: () => Promise<SearchResponse>) => {
+    return async () => {
+      return originalRequest;
+    };
+  };
+
+  private pagination(request: SearchRequest, response: SearchResponse) {
+    const params: Partial<SearchRIDRequest> = {
+      get_rid: 'yes',
+      rid: response.rid,
+      keywords_list: request.keywords_list,
+      no_submissions: request.no_submissions,
+      submission_ids_only: request.submission_ids_only,
+      submissions_per_page: request.submissions_per_page,
+    };
+
+    return {
+      /** Returns the next page of submissions. */
+      nextPage: () => {
+        const r = () => {
+          if (params.rid === undefined) {
+            throw new APIError(3, "Invalid Results ID sent as variable 'rid'. It contains invalid characters.");
+          }
+          return api.searchRid({
+            ...params,
+            sid: this.sid || '',
+            page: response.page ? response.page + 1 : undefined,
+          });
+        };
+        const alt = () => {
+          return api.search({
+            ...request,
+            sid: this.sid || '',
+            page: response.page ? response.page + 1 : undefined,
+          });
+        };
+        return handleErrors(r, {
+          2: this.handleSID,
+          3: this.handleRID(alt),
+          4: this.handleRID(alt),
+        });
+      },
+      /** Returns the previous page of submissions. */
+      previousPage: () => {
+        const r = () => {
+          if (params.rid === undefined) {
+            throw new APIError(3, "Invalid Results ID sent as variable 'rid'. It contains invalid characters.");
+          }
+          return api.searchRid({
+            ...params,
+            sid: this.sid || '',
+            page: response.page ? response.page - 1 : undefined,
+          });
+        };
+        const alt = () => {
+          return api.search({
+            ...request,
+            sid: this.sid || '',
+            page: response.page ? response.page - 1 : undefined,
+          });
+        };
+        return handleErrors(r, {
+          2: this.handleSID,
+          3: this.handleRID(alt),
+          4: this.handleRID(alt),
+        });
+      },
+    };
   }
 }
 export default Helper;
+
+const handleErrors = async <T>(
+  request: () => Promise<T>,
+  handlers: { [key: number]: () => Promise<(() => Promise<T>) | void> },
+  lastError?: number
+): Promise<T> => {
+  try {
+    return await request();
+  } catch (e) {
+    // Typecast error
+    let error;
+    if ('error_code' in e && 'error_message' in e) {
+      error = e as APIError;
+    } else {
+      throw e;
+    }
+    console.log(`[${error.error_code}] - ${error.error_message}`);
+
+    // Throw error if retry failed
+    if (lastError === error.error_code) {
+      throw e;
+    }
+
+    // Execute handler
+    const handler = handlers[error.error_code];
+    if (handler === undefined) {
+      throw e;
+    }
+    const override = await handler();
+    if (override === undefined) {
+      return handleErrors(request, handlers, error.error_code);
+    } else {
+      return handleErrors(override, handlers, error.error_code);
+    }
+  }
+};
 
 export interface Rating {
   nudity: boolean;
