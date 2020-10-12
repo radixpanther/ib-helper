@@ -158,6 +158,39 @@ export class Helper {
     return data;
   }
 
+  /**
+   * Sign out to invalidate the current session.
+   */
+  async details(
+    ids: string | string[],
+    includeDescription = false,
+    includePools = false,
+    includeWriting = false,
+    sortKeywords: 'submissions_count' | 'alphabetical' = 'submissions_count'
+  ) {
+    const request = () => {
+      let idsString;
+      if (Array.isArray(ids)) {
+        idsString = ids.join(',');
+      } else {
+        idsString = ids;
+      }
+      return api.details({
+        sid: this.sid || '',
+        submission_ids: idsString,
+        show_description: includeDescription ? 'yes' : 'no',
+        show_description_bbcode_parsed: includeDescription ? 'yes' : 'no',
+        show_pools: includePools ? 'yes' : 'no',
+        show_writing: includeWriting ? 'yes' : 'no',
+        show_writing_bbcode_parsed: includeWriting ? 'yes' : 'no',
+        sort_keywords_by: sortKeywords,
+      });
+    };
+    return handleErrors(request, {
+      2: this.handleSID,
+    });
+  }
+
   // SID Error Handler - Refreshes the current session.
   private handleSID = async () => {
     const response = await api.login({ username: this.username, password: this.password });
