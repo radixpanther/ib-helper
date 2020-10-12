@@ -1,9 +1,5 @@
 import api, { APIError, LoginResponse, SearchRequest, SearchResponse, SearchRIDRequest } from './api';
 
-interface Options {
-  retry: boolean;
-}
-
 export class Helper {
   private username: string;
   private password: string;
