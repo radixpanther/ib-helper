@@ -59,9 +59,17 @@ export class Helper {
         sid: this.sid || '',
       });
     };
-    return handleErrors(request, {
+    const data = handleErrors(request, {
       2: this.handleSID,
     });
+
+    // Invalidate session
+    this.sid = undefined;
+    this.username = '';
+    this.password = '';
+    this.guestRating = undefined;
+
+    return data;
   }
 
   /**
