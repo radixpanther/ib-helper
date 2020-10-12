@@ -59,7 +59,7 @@ export class Helper {
         sid: this.sid || '',
       });
     };
-    const data = handleErrors(request, {
+    const data = requestWithRetry(request, {
       2: this.handleSID,
     });
 
@@ -86,7 +86,7 @@ export class Helper {
         'tag[5]': rating.strongViolence ? 'yes' : 'no',
       });
     };
-    const data = await handleErrors(request, {
+    const data = await requestWithRetry(request, {
       2: this.handleSID,
     });
     this.guestRating = rating;
@@ -104,7 +104,7 @@ export class Helper {
         ...params,
       });
     };
-    const response = await handleErrors(request, {
+    const response = await requestWithRetry(request, {
       2: this.handleSID,
     });
 
@@ -148,7 +148,7 @@ export class Helper {
         ...params,
       });
     };
-    const response = await handleErrors(request, {
+    const response = await requestWithRetry(request, {
       2: this.handleSID,
     });
 
@@ -194,7 +194,7 @@ export class Helper {
         sort_keywords_by: 'alphabetical',
       });
     };
-    return handleErrors(request, {
+    return requestWithRetry(request, {
       2: this.handleSID,
     });
   }
@@ -247,7 +247,7 @@ export class Helper {
             page: response.page ? response.page + 1 : undefined,
           });
         };
-        return handleErrors(r, {
+        return requestWithRetry(r, {
           2: this.handleSID,
           3: this.handleRID(alt),
           4: this.handleRID(alt),
@@ -272,7 +272,7 @@ export class Helper {
             page: response.page ? response.page - 1 : undefined,
           });
         };
-        return handleErrors(r, {
+        return requestWithRetry(r, {
           2: this.handleSID,
           3: this.handleRID(alt),
           4: this.handleRID(alt),
@@ -283,7 +283,7 @@ export class Helper {
 }
 export default Helper;
 
-const handleErrors = async <T>(
+const requestWithRetry = async <T>(
   request: () => Promise<T>,
   handlers: { [key: number]: () => Promise<(() => Promise<T>) | void> },
   lastError?: number
@@ -312,9 +312,9 @@ const handleErrors = async <T>(
     }
     const override = await handler();
     if (override === undefined) {
-      return handleErrors(request, handlers, error.error_code);
+      return requestWithRetry(request, handlers, error.error_code);
     } else {
-      return handleErrors(override, handlers, error.error_code);
+      return requestWithRetry(override, handlers, error.error_code);
     }
   }
 };
