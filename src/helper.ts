@@ -161,15 +161,13 @@ export class Helper {
   }
 
   /**
-   * Sign out to invalidate the current session.
+   * Get submission details
+   * @param ids Submissions ids to fetch
+   * @param includeDescription Include description
+   * @param includePools Inlcude associated pools
+   * @param includeWriting Inlcude writing (stories)
    */
-  async details(
-    ids: string | string[],
-    includeDescription = false,
-    includePools = false,
-    includeWriting = false,
-    sortKeywords: 'submissions_count' | 'alphabetical' = 'submissions_count'
-  ) {
+  async details(ids: string | string[], includeDescription = false, includePools = false, includeWriting = false) {
     const request = () => {
       let idsString;
       if (Array.isArray(ids)) {
@@ -185,7 +183,7 @@ export class Helper {
         show_pools: includePools ? 'yes' : 'no',
         show_writing: includeWriting ? 'yes' : 'no',
         show_writing_bbcode_parsed: includeWriting ? 'yes' : 'no',
-        sort_keywords_by: sortKeywords,
+        sort_keywords_by: 'alphabetical',
       });
     };
     return handleErrors(request, {
