@@ -1,4 +1,6 @@
 import api, { APIError, LoginResponse, SearchRequest, SearchResponse, SearchRIDRequest } from './api';
+import _debug from 'debug';
+const debug = _debug('helper');
 
 export class Helper {
   private username: string;

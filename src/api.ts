@@ -1,4 +1,6 @@
 import fetch from 'node-fetch';
+import _debug from 'debug';
+const debug = _debug('api');
 
 /* TYPES */
 export class APIError extends Error {
@@ -393,9 +395,14 @@ const request = async <Request, Response>(url: string, params: Request): Promise
   const queryString = keys.map((key) => key + '=' + params[key]).join('&');
 
   // Send request
-  const response = await fetch(`${url}?output_mode=json&${queryString}`, { method: 'POST' });
-  console.log(`${url}?output_mode=json&${queryString}`);
-  const data = await response.json();
+  let data;
+  try {
+    debug(`[FETCH] ${url}?output_mode=json&${queryString}`);
+    const response = await fetch(`${url}?output_mode=json&${queryString}`, { method: 'POST' });
+    data = await response.json();
+  } catch (error) {
+    throw new APIError(-1, (error as Error).message);
+  }
 
   // Throw custom error if request fails
   if (data.error_code) {
