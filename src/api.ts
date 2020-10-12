@@ -139,7 +139,7 @@ export interface DetailedSubmission extends BaseSubmission {
   description_bbcode_parsed?: string;
   writing?: string;
   writing_bbcode_parsed?: string;
-  ratings: _Rating;
+  ratings: Rating;
   favorite: TrueFalse;
   sales_description: string | null;
   forsale: TrueFalse;
@@ -162,7 +162,7 @@ export interface Print {
   price_owner_discount: number;
 }
 
-export interface _Rating {
+export interface Rating {
   content_tag_id: string;
   name: string;
   description: string;

@@ -7,7 +7,7 @@ export class Helper {
   private password: string;
   sid: string | undefined;
 
-  private guestRating: Partial<Rating> | undefined;
+  private guestRating: Partial<UserRating> | undefined;
 
   /**
    * Inkbunny API Helper class
@@ -42,9 +42,9 @@ export class Helper {
     this.sid = response.sid;
 
     // Parse rating
-    const data: LoginResponse & { rating: Rating } = {
+    const data: LoginResponse & { rating: UserRating } = {
       ...response,
-      rating: parseRating(response.ratingsmask),
+      rating: parseUserRating(response.ratingsmask),
     };
 
     return data;
@@ -68,7 +68,7 @@ export class Helper {
    * Update the user content rating (guest login only).
    * @param rating Allowed ratings
    */
-  async rating(rating: Partial<Rating>) {
+  async rating(rating: Partial<UserRating>) {
     const request = () => {
       return api.rating({
         sid: this.sid || '',
@@ -311,16 +311,16 @@ const handleErrors = async <T>(
   }
 };
 
-export interface Rating {
+export interface UserRating {
   nudity: boolean;
   violence: boolean;
   sexualThemes: boolean;
   strongViolence: boolean;
 }
 
-function parseRating(mask: string) {
+function parseUserRating(mask: string) {
   mask = mask.padEnd(5, '0');
-  const rating: Rating = {
+  const rating: UserRating = {
     nudity: mask[1] === '1',
     violence: mask[2] === '1',
     sexualThemes: mask[3] === '1',
