@@ -21,7 +21,7 @@ export class Helper {
   }
 
   /**
-   * Sign in with your Inkbunny credentials.
+   * Login using your Inkbunny credentials.
    * Please make sure that your account has the 'Enable API Access' option checked!
    *
    * Username and password can be omitted to use the api as guest user (not recommended).
@@ -74,7 +74,7 @@ export class Helper {
 
   /**
    * Update the user content rating (guest login only).
-   * @param rating Allowed ratings
+   * @param rating The new user rating
    */
   async rating(rating: Partial<UserRating>) {
     const request = () => {
@@ -94,7 +94,7 @@ export class Helper {
   }
 
   /**
-   * Search submissions (complete control)
+   * Search submissions based on various factors. All properties from the API are accessible.
    * @param params Request Parameters
    */
   async search(params: Omit<SearchRequest, 'sid'>) {
@@ -125,11 +125,11 @@ export class Helper {
   }
 
   /**
-   * Search submissions by certain tags
+   * Search submissions that contain certain tags.
    * @param tags Required tags
-   * @param idsOnly Return only submissions ids
-   * @param page Page number
-   * @param submissionsPerPage Amount of submissions to fetch per page
+   * @param idsOnly Only return submission ids
+   * @param page Request a certain page
+   * @param submissionsPerPage Amount of submissions per page
    */
   async searchTags(tags: string[], idsOnly = false, page = 1, submissionsPerPage = 30) {
     const params: Partial<SearchRequest> = {
@@ -169,9 +169,9 @@ export class Helper {
   }
 
   /**
-   * Get submission details
+   * Access the full details about specified submissions.
    * @param ids Submissions ids to fetch
-   * @param includeDescription Include description
+   * @param includeDescription Include the description
    * @param includePools Inlcude associated pools
    * @param includeWriting Inlcude writing (stories)
    */
