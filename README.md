@@ -23,8 +23,8 @@ You can alternatively use the API as guest user (not recommended). Accessing the
 
 ```js
 // ES5
-const ib = require('ib-helper');
-const helper = new ib.Helper();
+var ib = require('ib-helper');
+var helper = new ib.Helper();
 
 // ES6
 import Helper from 'ib-helper';
@@ -56,7 +56,7 @@ const helper = new ib.Helper();
 
 ```js
 // ES5
-const api = require('ib-helper').api;
+var api = require('ib-helper').api;
 
 // ES6
 import { api } from 'ib-helper';
@@ -133,7 +133,7 @@ main();
 
 ## Documentation
 
-The library only specifies what is requested by the user and doesn't set custom defaults.
+The library only specifies what is requested by the user and doesn't set its own defaults.
 Always check the defaults in the Inkbunny API Documentation!
 (https://wiki.inkbunny.net/wiki/API)
 
@@ -151,20 +151,22 @@ const helper = new ib.Helper();
 
 Login using your Inkbunny credentials. The helper class will keep track of your session, so you don't have to worry about invalid tokens.
 
-**Make sure you enabled API Access in your Inkbunny account settings!**
+_Make sure you enabled API Access in your Inkbunny account settings!_
+
+(LoginResponse: https://wiki.inkbunny.net/wiki/API#Response_2)
 
 ```ts
 /* REQUIRES */
-Helper.login(
+helper.login(
   // Your Inkbunny username
   username?: string,
+
   // Your Inkbunny password
   password?: string
 )
 
 /* RETURNS */
 Promise<
-  // IB Login Response (https://wiki.inkbunny.net/wiki/API#Response_2)
   LoginResponse &
   {
     // Converts the ratingsmask into a readable format
@@ -183,22 +185,23 @@ UserRating {
 
 **Logout**
 
-Logout to destroy your current session.
+Sign out to invalidate the current session.
+
+(Logout Response: https://wiki.inkbunny.net/wiki/API#Response_3)
 
 ```ts
 /* REQUIRES */
-Helper.logout();
+Helper.logout()
 
 /* RETURNS */
-Promise<
-  // IB Logout Response (https://wiki.inkbunny.net/wiki/API#Response_3)
-  LogoutResponse
->
+Promise<LogoutResponse>
 ```
 
 **Change User Rating**
 
-Logout to destroy your current session.
+Update the user content rating (guest login only).
+
+(Rating Response: https://wiki.inkbunny.net/wiki/API#Response_4)
 
 ```ts
 /* REQUIRES */
@@ -208,10 +211,7 @@ Helper.rating(
 )
 
 /* RETURNS */
-Promise<
-  // IB Rating Response (https://wiki.inkbunny.net/wiki/API#Response_4)
-  RatingResponse
->
+Promise<RatingResponse>
 
 /* UserRating Object */
 UserRating {
@@ -224,14 +224,36 @@ UserRating {
 
 **Search Submissions**
 
+Search submissions based on various factors. All properties from the API are accessible. Injects helper functions to make fetching more pages easier.
+
+(Search Request: https://wiki.inkbunny.net/wiki/API#Parameters_4)
+
+(Search Response: https://wiki.inkbunny.net/wiki/API#Response_5)
+
 ```ts
 /* REQUIRES */
-Helper.search();
+Helper.search(
+  params: SearchRequest
+)
 
 /* RETURNS */
+Promise<
+  SearchResponse &
+  {
+    // Fetch the next page
+    nextPage: () => Promise<SearchResponse>;
+
+    // Fetch the previous page
+    previousPage: () => Promise<SearchResponse>;
+  }
+>
 ```
 
 **Search Submissions By Tag**
+
+Search submissions that contain certain tags. Injects helper functions to make fetching more pages easier.
+
+(Search Response: https://wiki.inkbunny.net/wiki/API#Response_5)
 
 ```ts
 /* REQUIRES */
@@ -251,7 +273,6 @@ Helper.searchTags(
 
 /* RETURNS */
 Promise<
-  // IB Search Response (https://wiki.inkbunny.net/wiki/API#Response_5)
   SearchResponse &
   {
     // Fetch the next page
@@ -263,6 +284,28 @@ Promise<
 >
 ```
 
-### Our API
+**Submission Details**
 
-If the helper class doesn't provide the functionality you need, you can always access the API directly, without using the helper functions.
+Access the full details about specified submissions.
+
+(Details Response: https://wiki.inkbunny.net/wiki/API#Response_6)
+
+```ts
+/* REQUIRES */
+Helper.details(
+  // Submissions ids to fetch
+  ids: string | string[],
+
+  // Include the description
+  includeDescription?: boolean,
+
+  // Inlcude associated pools
+  includePools?: boolean,
+
+  // Inlcude writing (stories)
+  includeWriting?: boolean
+)
+
+/* RETURNS */
+Promise<DetailsResponse>
+```
