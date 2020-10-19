@@ -124,6 +124,33 @@ export class Helper {
     return data;
   }
 
+  private async searchRID(request: SearchRequest, params: Omit<SearchRIDRequest, 'sid'>) {
+    const r = () => {
+      return api.searchRid({
+        sid: this.sid || '',
+        ...params,
+      });
+    };
+    const response = await requestWithRetry(r, {
+      2: this.handleSID,
+    });
+
+    // Inject pagination functions
+    const pageHelpers = this.pagination(
+      {
+        ...request,
+        sid: this.sid || '',
+      },
+      response
+    );
+
+    const data: SearchResponse & PageHelpers = {
+      ...response,
+      ...pageHelpers,
+    };
+    return data;
+  }
+
   /**
    * Search submissions that contain certain tags.
    * @param tags Required tags
@@ -161,7 +188,7 @@ export class Helper {
       response
     );
 
-    const data: SearchResponse & typeof pageHelpers = {
+    const data: SearchResponse & PageHelpers = {
       ...response,
       ...pageHelpers,
     };
@@ -227,27 +254,25 @@ export class Helper {
       submissions_per_page: request.submissions_per_page,
     };
 
-    return {
+    const pageHelpers: PageHelpers = {
       /** Returns the next page of submissions. */
       nextPage: () => {
         const r = () => {
           if (params.rid === undefined) {
             throw new APIError(3, "Invalid Results ID sent as variable 'rid'. It contains invalid characters.");
           }
-          return api.searchRid({
+          return this.searchRID(request, {
             ...params,
-            sid: this.sid || '',
             page: response.page ? response.page + 1 : undefined,
           });
         };
         const alt = () => {
-          return api.search({
+          return this.search({
             ...request,
-            sid: this.sid || '',
             page: response.page ? response.page + 1 : undefined,
           });
         };
-        return requestWithRetry(r, {
+        return <Promise<SearchResponse & PageHelpers>>requestWithRetry(r, {
           2: this.handleSID,
           3: this.handleRID(alt),
           4: this.handleRID(alt),
@@ -259,26 +284,25 @@ export class Helper {
           if (params.rid === undefined) {
             throw new APIError(3, "Invalid Results ID sent as variable 'rid'. It contains invalid characters.");
           }
-          return api.searchRid({
+          return this.searchRID(request, {
             ...params,
-            sid: this.sid || '',
             page: response.page ? response.page - 1 : undefined,
           });
         };
         const alt = () => {
-          return api.search({
+          return this.search({
             ...request,
-            sid: this.sid || '',
             page: response.page ? response.page - 1 : undefined,
           });
         };
-        return requestWithRetry(r, {
+        return <Promise<SearchResponse & PageHelpers>>requestWithRetry(r, {
           2: this.handleSID,
           3: this.handleRID(alt),
           4: this.handleRID(alt),
         });
       },
     };
+    return pageHelpers;
   }
 }
 export default Helper;
@@ -298,7 +322,7 @@ const requestWithRetry = async <T>(
     } else {
       throw e;
     }
-    console.log(`[${error.error_code}] - ${error.error_message}`);
+    debug(`[${error.error_code}] - ${error.error_message}`);
 
     // Throw error if retry failed
     if (lastError === error.error_code) {
@@ -318,6 +342,11 @@ const requestWithRetry = async <T>(
     }
   }
 };
+
+export interface PageHelpers {
+  nextPage: () => Promise<SearchResponse & PageHelpers>;
+  previousPage: () => Promise<SearchResponse & PageHelpers>;
+}
 
 export interface UserRating {
   nudity: boolean;
