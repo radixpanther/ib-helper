@@ -30,7 +30,7 @@ export class Helper {
    */
   async login(username = 'guest', password = '') {
     // Warn in guest mode
-    if (this.username === 'guest') {
+    if (username === 'guest') {
       console.warn('Using the API as guest user can be significantly slower! Use proper credentials instead!');
     } else {
       this.username = username;
