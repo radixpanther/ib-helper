@@ -1,6 +1,12 @@
 # ib-helper
 
-Makes accessing the Inkbunny API just a little bit easier. Complete with TypeScript support!
+[![Tests Status](https://github.com/FurSuperscripts/ib-helper/actions/workflows/test.yml/badge.svg)](https://github.com/FurSuperscripts/ib-helper/actions/workflows/test.yml)
+[![Downloads](https://badgen.net/npm/dt/ib-helper)](https://www.npmjs.com/package/ib-helper)
+[![Version](https://badgen.net/npm/v/ib-helper)](https://www.npmjs.com/package/ib-helper)
+[![Types](https://badgen.net/npm/types/ib-helper)](https://www.npmjs.com/package/ib-helper)
+[![License](https://badgen.net/github/license/micromatch/micromatch)](https://github.com/FurSuperscripts/ib-helper/blob/main/LICENSE)
+
+> Makes accessing the Inkbunny API just a little bit easier. Complete with TypeScript support!
 
 ## Installation
 
