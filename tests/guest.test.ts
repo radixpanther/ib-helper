@@ -1,4 +1,4 @@
-import Helper from '../';
+import Helper from '../src';
 
 let helper: Helper;
 beforeAll(() => {
