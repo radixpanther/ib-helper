@@ -44,5 +44,5 @@ describe('Guest Mode', () => {
     expect(res.submissions.length).toBe(10);
     expect(typeof res.nextPage).toBe('function');
     expect(typeof res.previousPage).toBe('function');
-  });
+  }, 10000);
 });
