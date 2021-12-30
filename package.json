@@ -37,14 +37,12 @@
     "release": "standard-version"
   },
   "dependencies": {
-    "debug": "^4.3.3",
-    "node-fetch": "^2.6.6"
+    "axios": "^0.24.0",
+    "debug": "^4.3.3"
   },
   "devDependencies": {
     "@types/debug": "^4.1.7",
     "@types/jest": "^27.0.3",
-    "@types/node": "^16.0.0",
-    "@types/node-fetch": "^2.5.8",
     "jest": "^27.4.5",
     "prettier": "^2.5.1",
     "standard-version": "^9.3.2",
