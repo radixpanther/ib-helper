@@ -6,11 +6,12 @@ on:
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        node-version: [14.x]
+        os: [ubuntu-latest]
+        node-version: [16.x]
 
     steps:
       - name: Check out repository
@@ -20,14 +21,23 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-          registry-url: https://registry.npmjs.org/
+
+      - name: Cache dependencies
+        id: yarn-cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            node_modules
+            .yarn/cache
+          key: ${{ matrix.os }}-node-v${{ matrix.node-version }}-yarn-${{ hashFiles('yarn.lock') }}
 
       - name: Install dependencies
-        run: yarn --frozen-lockfile
+        run: yarn --immutable
 
-      - name: Compile typescript
+      - name: Build package
         run: yarn build
 
-      - run: npm publish
+      - name: Publish package
+        run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+          NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
