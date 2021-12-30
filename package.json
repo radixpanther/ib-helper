@@ -33,7 +33,8 @@
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc -w",
-    "test": "jest"
+    "test": "jest",
+    "release": "standard-version"
   },
   "dependencies": {
     "debug": "^4.3.3",
