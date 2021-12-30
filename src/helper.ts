@@ -314,7 +314,7 @@ const requestWithRetry = async <T>(
 ): Promise<T> => {
   try {
     return await request();
-  } catch (e) {
+  } catch (e: any) {
     // Typecast error
     let error;
     if ('error_code' in e && 'error_message' in e) {

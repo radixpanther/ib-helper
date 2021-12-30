@@ -399,7 +399,7 @@ const request = async <Request, Response>(url: string, params: Request): Promise
   try {
     debug(`[FETCH] ${url}?output_mode=json&${queryString}`);
     const response = await fetch(`${url}?output_mode=json&${queryString}`, { method: 'POST' });
-    data = await response.json();
+    data = (await response.json()) as any;
   } catch (error) {
     throw new APIError(-1, (error as Error).message);
   }
