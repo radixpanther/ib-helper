@@ -38,10 +38,9 @@
   },
   "dependencies": {
     "axios": "^0.24.0",
-    "debug": "^4.3.3"
+    "loglevel": "^1.8.0"
   },
   "devDependencies": {
-    "@types/debug": "^4.1.7",
     "@types/jest": "^27.0.3",
     "jest": "^27.4.5",
     "prettier": "^2.5.1",

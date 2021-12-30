@@ -1,6 +1,5 @@
 import api, { APIError, LoginResponse, SearchRequest, SearchResponse, SearchRIDRequest } from './api';
-import _debug from 'debug';
-const debug = _debug('helper');
+import * as log from 'loglevel';
 
 export class Helper {
   private username: string;
@@ -18,6 +17,22 @@ export class Helper {
   constructor() {
     this.username = 'guest';
     this.password = '';
+  }
+
+  /**
+   * Sets the log level, defining which events are printed to console.
+   * @param newLevel level at which to start logging to console
+   */
+  setLogLevel(newLevel: log.LogLevelDesc) {
+    log.setLevel(newLevel);
+  }
+
+  /**
+   * Gets the log level currently set.
+   * @returns current log level
+   */
+  getLogLevel() {
+    return log.getLevel();
   }
 
   /**
@@ -322,7 +337,7 @@ const requestWithRetry = async <T>(
     } else {
       throw e;
     }
-    debug(`[${error.error_code}] - ${error.error_message}`);
+    log.debug(`[RETRY] ${error.error_code} - ${error.error_message}`);
 
     // Throw error if retry failed
     if (lastError === error.error_code) {

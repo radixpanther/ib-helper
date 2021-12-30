@@ -1,6 +1,5 @@
 import axios from 'axios';
-import _debug from 'debug';
-const debug = _debug('api');
+import * as log from 'loglevel';
 
 /* TYPES */
 export class APIError extends Error {
@@ -393,12 +392,13 @@ const request = async <Request, Response>(url: string, params: Request): Promise
   // Construct query string
   keys = Object.keys(params) as Array<keyof typeof params>;
   const queryString = keys.map((key) => key + '=' + params[key]).join('&');
+  const queryUrl = `${url}?output_mode=json&${queryString}`;
 
   // Send request
   let data;
   try {
-    debug(`[FETCH] ${url}?output_mode=json&${queryString}`);
-    data = await axios(`${url}?output_mode=json&${queryString}`, { method: 'POST' }).then((res) => res.data);
+    log.debug(`[FETCH] ${queryUrl}`);
+    data = await axios(queryUrl, { method: 'POST' }).then((res) => res.data);
   } catch (error) {
     throw new APIError(-1, (error as Error).message);
   }
